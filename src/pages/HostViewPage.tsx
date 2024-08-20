@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { db, collection, getDocs } from "../firebase/firebase";
 
 const HostView: React.FC = () => {
   const [responses, setResponses] = useState<
@@ -6,20 +7,16 @@ const HostView: React.FC = () => {
   >([]);
 
   useEffect(() => {
-    const allResponses: { name: string; answer: string }[] = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      console.log(`Checking key: ${key}`);
-      if (key && key.startsWith("response-")) {
-        const response = localStorage.getItem(key);
-        if (response) {
-          allResponses.push(JSON.parse(response));
-          console.log(`Response found: ${response}`);
-        }
-      }
-    }
-    setResponses(allResponses);
-    console.log("All responses loaded:", allResponses);
+    const fetchData = async () => {
+      const querySnapshot = await getDocs(collection(db, "responses"));
+      const allResponses = querySnapshot.docs.map(
+        (doc) => doc.data() as { name: string; answer: string }
+      );
+      setResponses(allResponses);
+      console.log("All responses loaded:", allResponses);
+    };
+
+    fetchData();
   }, []);
 
   return (

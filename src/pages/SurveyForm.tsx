@@ -1,17 +1,26 @@
 import React, { useState } from "react";
+import { db } from "../firebase/firebase";
+import { collection, addDoc } from "firebase/firestore";
 
 const SurveyForm: React.FC = () => {
   const [name, setName] = useState("");
   const [answer, setAnswer] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log(`Submitting: Name = ${name}, Answer = ${answer}`);
-    const userResponse = { name, answer };
-    localStorage.setItem(`response-${name}`, JSON.stringify(userResponse));
-    setSubmitted(true);
-    console.log("Response saved to local storage");
+
+    try {
+      const docRef = await addDoc(collection(db, "responses"), {
+        name,
+        answer,
+      });
+      console.log("Document written with ID: ", docRef.id);
+      setSubmitted(true);
+    } catch (e) {
+      console.error("Error adding document: ", e);
+    }
   };
 
   return (
